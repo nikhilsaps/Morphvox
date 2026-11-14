@@ -37,7 +37,7 @@ microphone that any app can use as its "mic".
   |------|-------------|-------|---------|---------|
   | **Fast** | `pm` | off | ~270 ms | lowest latency, calls |
   | **Natural** *(default)* | `rmvpe` | off | ~330 ms | best balance |
-  | **Max** | `rmvpe` | on | ~580 ms | recording, highest fidelity |
+  | **Max** | `rmvpe` | on | ~310 ms | highest fidelity, GPU-accelerated index |
 - **Virtual mic routing** via [VB-Audio Virtual Cable](https://vb-audio.com/Cable/) — works with any app that picks a microphone.
 - **Live monitor + VU meters + A/B bypass** — hear yourself, watch input/output levels, compare raw vs converted instantly.
 - **Noise gate** — silences model hallucinations between words.
@@ -49,11 +49,11 @@ Real-time RVC is hard because each conversion has a ~fixed overhead regardless o
 Morphvox exploits that:
 
 - **Context buffering** — each tick converts a long window (past context + new audio) but only emits the newest slice, so you get quality context *for free* with no added latency.
-- **Index off for live** — the faiss retrieval index adds a flat ~300–450 ms, so live modes skip it (`index_rate=0`); "Max" mode turns it back on for offline-quality.
+- **GPU-resident retrieval index** — stock rvc-python re-reads the `.index` file and reconstructs every stored vector on *every frame*, then runs a CPU faiss kNN (~300–450 ms). Morphvox monkeypatches `faiss.read_index` to keep the index on the GPU and runs the kNN as an exact torch distance+topk, so retrieval costs **~0 ms**. "Max" quality now runs at the same latency as "Natural".
 - **`pm` vs `rmvpe`** — `pm` pitch tracking is ~60 ms cheaper per frame; pick it in "Fast".
 - **Crossfaded seams** — overlapping tails are blended to kill clicks between chunks.
 
-Honest latency on an RTX 5060 laptop: **~270–330 ms** mouth-to-ear live (Fast–Natural). Call-usable, not zero.
+Honest latency on an RTX 5060 laptop: **~270–330 ms** mouth-to-ear across all three quality modes (Fast–Max). Call-usable, not zero.
 
 ## 📦 Requirements
 

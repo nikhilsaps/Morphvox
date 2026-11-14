@@ -39,6 +39,14 @@ class RVCConverter(Converter):
     def warmup(self, samplerate):
         import tempfile, soundfile as sf
         from rvc_python.infer import RVCInference
+        # Swap faiss's CPU read_index for a GPU-resident kNN index (huge latency win
+        # on 'Max' quality: index retrieval drops from ~300-450ms to ~25ms). Must run
+        # before load_model, which calls faiss.read_index. No-op if gpu_index missing.
+        try:
+            import gpu_index
+            gpu_index.patch_faiss(self.device)
+        except Exception:
+            pass
         self._sr = int(samplerate)
         self.rvc = RVCInference(models_dir=self.models_dir, device=self.device)
         self.rvc.load_model(self.model_name, version="v2")

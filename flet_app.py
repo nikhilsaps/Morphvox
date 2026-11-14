@@ -43,12 +43,12 @@ VOICES = {
 PASSTHROUGH = "Passthrough (test)"
 
 # --- Quality = HOW it converts. (f0method, index_rate, rms_mix, hop_ms, ctx_ms, xf_ms)
-# Measured on box (RTX 5060): pm ~80ms convert, rmvpe ~122ms, faiss index +~300ms.
+# Measured on box (RTX 5060): pm ~80ms convert, rmvpe ~102ms, GPU index +~0ms (gpu_index.patch_faiss).
 # Convert cost is ~fixed regardless of window, so context is free.
 QUALITY = {
     "Fast (pm)":          ("pm",    0.0, 0.25, 140, 320, 30),
     "Natural (rmvpe)":    ("rmvpe", 0.0, 0.50, 160, 320, 30),
-    "Max (rmvpe+index)":  ("rmvpe", 0.5, 0.50, 400, 320, 30),
+    "Max (rmvpe+index)":  ("rmvpe", 0.5, 0.50, 160, 320, 30),
 }
 DEFAULT_VOICE = "Amiya (anime, F)"
 DEFAULT_QUALITY = "Natural (rmvpe)"
