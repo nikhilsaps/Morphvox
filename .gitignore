@@ -1,0 +1,27 @@
+# Models & weights (large, licensed separately — users bring their own)
+rvc_models/
+base_models/
+*.pth
+*.index
+*.pt
+
+# Audio artifacts
+*.wav
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+
+# Logs & temp
+*.log
+_chunk.wav
+_warm.wav
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/

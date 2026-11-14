@@ -1,0 +1,12 @@
+# Core pipeline (installed in venv aio_old, Python 3.11)
+numpy
+scipy
+sounddevice
+soundfile
+librosa
+flet
+# GPU (install separately, CUDA 12.8 build for RTX 5060 / sm_120):
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
+torch
+torchaudio
+# RVC engine deps come later (fairseq, faiss-cpu, etc.)
