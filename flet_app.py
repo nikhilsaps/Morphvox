@@ -18,6 +18,10 @@ import sounddevice as sd
 import os
 from audio_engine import AudioEngine
 from engines.passthrough import PassthroughConverter
+try:
+    import gpu_boost
+except Exception:
+    gpu_boost = None
 
 _MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rvc_models")
 
@@ -42,8 +46,8 @@ PASSTHROUGH = "Passthrough (test)"
 # Measured on box (RTX 5060): pm ~80ms convert, rmvpe ~122ms, faiss index +~300ms.
 # Convert cost is ~fixed regardless of window, so context is free.
 QUALITY = {
-    "Fast (pm)":          ("pm",    0.0, 0.25, 180, 320, 30),
-    "Natural (rmvpe)":    ("rmvpe", 0.0, 0.50, 180, 320, 30),
+    "Fast (pm)":          ("pm",    0.0, 0.25, 140, 320, 30),
+    "Natural (rmvpe)":    ("rmvpe", 0.0, 0.50, 160, 320, 30),
     "Max (rmvpe+index)":  ("rmvpe", 0.5, 0.50, 400, 320, 30),
 }
 DEFAULT_VOICE = "Amiya (anime, F)"
@@ -103,6 +107,8 @@ def main(page: ft.Page):
     page.scroll = ft.ScrollMode.AUTO
 
     state = {"eng": None, "conv": None, "alive": True, "busy": False}
+    if gpu_boost:
+        gpu_boost.set_high_priority()  # steadier audio thread scheduling
 
     voice_opts = [ft.dropdown.Option(k) for k in VOICES] + [ft.dropdown.Option(PASSTHROUGH)]
     engine_dd = ft.Dropdown(label="Voice", options=voice_opts, value=DEFAULT_VOICE, width=500)

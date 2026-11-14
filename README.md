@@ -35,8 +35,8 @@ microphone that any app can use as its "mic".
 - **Quality toggle** — pick your latency/quality trade-off on the fly:
   | Mode | Pitch engine | Index | Latency | Use for |
   |------|-------------|-------|---------|---------|
-  | **Fast** | `pm` | off | ~310 ms | lowest latency, calls |
-  | **Natural** *(default)* | `rmvpe` | off | ~350 ms | best balance |
+  | **Fast** | `pm` | off | ~270 ms | lowest latency, calls |
+  | **Natural** *(default)* | `rmvpe` | off | ~330 ms | best balance |
   | **Max** | `rmvpe` | on | ~580 ms | recording, highest fidelity |
 - **Virtual mic routing** via [VB-Audio Virtual Cable](https://vb-audio.com/Cable/) — works with any app that picks a microphone.
 - **Live monitor + VU meters + A/B bypass** — hear yourself, watch input/output levels, compare raw vs converted instantly.
@@ -53,7 +53,7 @@ Morphvox exploits that:
 - **`pm` vs `rmvpe`** — `pm` pitch tracking is ~60 ms cheaper per frame; pick it in "Fast".
 - **Crossfaded seams** — overlapping tails are blended to kill clicks between chunks.
 
-Honest latency ceiling on an RTX 5060 laptop: **~310–390 ms** mouth-to-ear. Call-usable, not zero.
+Honest latency on an RTX 5060 laptop: **~270–330 ms** mouth-to-ear live (Fast–Natural). Call-usable, not zero.
 
 ## 📦 Requirements
 
