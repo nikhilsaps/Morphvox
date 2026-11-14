@@ -111,8 +111,9 @@ class AudioEngine:
         # emit clean silence instead of converting. hold keeps it open through
         # brief pauses so word-tails aren't clipped.
         self.gate_on = True
-        self.gate_thresh = 0.008     # input RMS (linear) to count as speech
-        self.gate_hold_ms = 450
+        self.gate_thresh = 0.005        # input RMS to OPEN the gate (bar to reject noise)
+        self.gate_close_thresh = 0.0025 # once open, stay open above this (hysteresis)
+        self.gate_hold_ms = 600
 
         self.running = False
         self._worker = None
@@ -153,9 +154,10 @@ class AudioEngine:
         prev_tail = np.zeros(xf, dtype=np.float32)        # converted seam tail
         fade = np.linspace(0, 1, xf, dtype=np.float32) if xf else np.zeros(0, np.float32)
         fade_in, fade_out = fade, 1.0 - fade
-        hold_blocks = max(1, int(self.gate_hold_ms / max(1, self.block_ms)))
+        hold_blocks = max(2, int(round(self.gate_hold_ms / max(1, self.block_ms))))
         hold = 0
         ramp_dn = np.linspace(1, 0, hop, dtype=np.float32)
+        last_hop = np.zeros(hop, dtype=np.float32)   # last converted block, for release fade
         gate_was_open = False
         while self.running:
             if self.in_ring.available() < hop:
@@ -168,7 +170,8 @@ class AudioEngine:
             # noise gate: skip convert entirely on silence -> clean silence out
             rms = float(np.sqrt(np.mean(new * new))) if len(new) else 0.0
             if self.gate_on and not self.bypass:
-                if rms >= self.gate_thresh:
+                trig = self.gate_thresh if hold <= 0 else self.gate_close_thresh
+                if rms >= trig:
                     hold = hold_blocks
                 else:
                     hold -= 1
@@ -177,8 +180,8 @@ class AudioEngine:
                 gate_open = True
             if not gate_open:
                 emit = np.zeros(hop, dtype=np.float32)
-                if gate_was_open:            # smooth close on the first silent block
-                    emit[:] = 0.0
+                if gate_was_open:            # release fade on first silent block
+                    emit = last_hop * ramp_dn   # fade out tail instead of hard cut
                 prev_tail = prev_tail * 0.5
                 gate_was_open = False
                 self.last_convert_ms = 0.0
@@ -208,6 +211,7 @@ class AudioEngine:
             emit = emit[:hop]
             if len(emit) < hop:
                 emit = np.pad(emit, (0, hop - len(emit)))
+            last_hop = emit   # remember for release fade when the gate next closes
 
             if len(emit):
                 self.out_peak = max(self.out_peak * 0.8, float(np.max(np.abs(emit))))
